@@ -35,20 +35,20 @@ func (e *MaxNestedLevelError) Error() string {
 
 // MaxArrayElementsError indicates exceeded max number of elements for CBOR arrays.
 type MaxArrayElementsError struct {
-	maxArrayElements int
+	maxArrayElements int64
 }
 
 func (e *MaxArrayElementsError) Error() string {
-	return "cbor: exceeded max number of elements " + strconv.Itoa(e.maxArrayElements) + " for CBOR array"
+	return "cbor: exceeded max number of elements " + strconv.FormatInt(e.maxArrayElements, 10) + " for CBOR array"
 }
 
 // MaxMapPairsError indicates exceeded max number of key-value pairs for CBOR maps.
 type MaxMapPairsError struct {
-	maxMapPairs int
+	maxMapPairs int64
 }
 
 func (e *MaxMapPairsError) Error() string {
-	return "cbor: exceeded max number of key-value pairs " + strconv.Itoa(e.maxMapPairs) + " for CBOR map"
+	return "cbor: exceeded max number of key-value pairs " + strconv.FormatInt(e.maxMapPairs, 10) + " for CBOR map"
 }
 
 // IndefiniteLengthError indicates found disallowed indefinite length items.
@@ -70,7 +70,7 @@ func (e *TagsMdError) Error() string {
 
 // valid checks whether the CBOR data is complete and well-formed.
 func (d *decoder) valid() error {
-	if len(d.data) == d.off {
+	if int64(len(d.data)) == d.off {
 		return io.EOF
 	}
 	_, err := d.validInternal(0)
@@ -92,12 +92,12 @@ func (d *decoder) validInternal(depth int) (int, error) {
 			}
 			return d.validIndefiniteString(t, depth)
 		}
-		valInt := int(val)
+		valInt := int64(val)
 		if valInt < 0 {
 			// Detect integer overflow
 			return 0, errors.New("cbor: " + t.String() + " length " + strconv.FormatUint(val, 10) + " is too large, causing integer overflow")
 		}
-		if len(d.data)-d.off < valInt { // valInt+off may overflow integer
+		if int64(len(d.data))-d.off < valInt { // valInt+off may overflow integer
 			return 0, io.ErrUnexpectedEOF
 		}
 		d.off += valInt
@@ -114,7 +114,7 @@ func (d *decoder) validInternal(depth int) (int, error) {
 			return d.validIndefiniteArrayOrMap(t, depth)
 		}
 
-		valInt := int(val)
+		valInt := int64(val)
 		if valInt < 0 {
 			// Detect integer overflow
 			return 0, errors.New("cbor: " + t.String() + " length " + strconv.FormatUint(val, 10) + " is too large, it would cause integer overflow")
@@ -136,7 +136,7 @@ func (d *decoder) validInternal(depth int) (int, error) {
 		}
 		maxDepth := depth
 		for j := 0; j < count; j++ {
-			for i := 0; i < valInt; i++ {
+			for i := int64(0); i < valInt; i++ {
 				var dpt int
 				if dpt, err = d.validInternal(depth); err != nil {
 					return 0, err
@@ -154,7 +154,7 @@ func (d *decoder) validInternal(depth int) (int, error) {
 
 		// Scan nested tag numbers to avoid recursion.
 		for {
-			if len(d.data) == d.off { // Tag number must be followed by tag content.
+			if int64(len(d.data)) == d.off { // Tag number must be followed by tag content.
 				return 0, io.ErrUnexpectedEOF
 			}
 			if cborType(d.data[d.off]&0xe0) != cborTypeTag {
@@ -178,7 +178,7 @@ func (d *decoder) validInternal(depth int) (int, error) {
 func (d *decoder) validIndefiniteString(t cborType, depth int) (int, error) {
 	var err error
 	for {
-		if len(d.data) == d.off {
+		if int64(len(d.data)) == d.off {
 			return 0, io.ErrUnexpectedEOF
 		}
 		if d.data[d.off] == 0xff {
@@ -204,9 +204,9 @@ func (d *decoder) validIndefiniteString(t cborType, depth int) (int, error) {
 func (d *decoder) validIndefiniteArrayOrMap(t cborType, depth int) (int, error) {
 	var err error
 	maxDepth := depth
-	i := 0
+	i := int64(0)
 	for {
-		if len(d.data) == d.off {
+		if int64(len(d.data)) == d.off {
 			return 0, io.ErrUnexpectedEOF
 		}
 		if d.data[d.off] == 0xff {
@@ -238,7 +238,7 @@ func (d *decoder) validIndefiniteArrayOrMap(t cborType, depth int) (int, error) 
 }
 
 func (d *decoder) validHead() (t cborType, ai byte, val uint64, err error) {
-	dataLen := len(d.data) - d.off
+	dataLen := int64(len(d.data)) - d.off
 	if dataLen == 0 {
 		return 0, 0, 0, io.ErrUnexpectedEOF
 	}

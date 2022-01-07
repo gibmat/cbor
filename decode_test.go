@@ -107,13 +107,13 @@ var unmarshalTests = []unmarshalTest{
 	{
 		hexDecode("1b000000e8d4a51000"),
 		uint64(1000000000000),
-		[]interface{}{uint64(1000000000000), uint(1000000000000), int64(1000000000000), int(1000000000000), float32(1000000000000), float64(1000000000000), bigIntOrPanic("1000000000000")},
+		[]interface{}{uint64(1000000000000), uint64(1000000000000), int64(1000000000000), int64(1000000000000), float32(1000000000000), float64(1000000000000), bigIntOrPanic("1000000000000")},
 		[]reflect.Type{typeUint8, typeUint16, typeUint32, typeInt8, typeInt16, typeInt32, typeString, typeBool, typeByteArray, typeIntSlice, typeMapStringInt, typeTag, typeRawTag},
 	},
 	{
 		hexDecode("1bffffffffffffffff"),
 		uint64(18446744073709551615),
-		[]interface{}{uint64(18446744073709551615), uint(18446744073709551615), float32(18446744073709551615), float64(18446744073709551615), bigIntOrPanic("18446744073709551615")},
+		[]interface{}{uint64(18446744073709551615), uint64(18446744073709551615), float32(18446744073709551615), float64(18446744073709551615), bigIntOrPanic("18446744073709551615")},
 		[]reflect.Type{typeUint8, typeUint16, typeUint32, typeInt8, typeInt16, typeInt32, typeString, typeBool, typeByteArray, typeIntSlice, typeMapStringInt, typeTag, typeRawTag},
 	},
 	// negative integer

@@ -272,11 +272,11 @@ type DecOptions struct {
 
 	// MaxArrayElements specifies the max number of elements for CBOR arrays.
 	// Default is 128*1024=131072 and it can be set to [16, 2147483647]
-	MaxArrayElements int
+	MaxArrayElements int64
 
 	// MaxMapPairs specifies the max number of key-value pairs for CBOR maps.
 	// Default is 128*1024=131072 and it can be set to [16, 2147483647]
-	MaxMapPairs int
+	MaxMapPairs int64
 
 	// IndefLength specifies whether to allow indefinite length CBOR items.
 	IndefLength IndefLengthMode
@@ -384,12 +384,12 @@ func (opts DecOptions) decMode() (*decMode, error) {
 	if opts.MaxArrayElements == 0 {
 		opts.MaxArrayElements = defaultMaxArrayElements
 	} else if opts.MaxArrayElements < minMaxArrayElements || opts.MaxArrayElements > maxMaxArrayElements {
-		return nil, errors.New("cbor: invalid MaxArrayElements " + strconv.Itoa(opts.MaxArrayElements) + " (range is [" + strconv.Itoa(minMaxArrayElements) + ", " + strconv.Itoa(maxMaxArrayElements) + "])")
+		return nil, errors.New("cbor: invalid MaxArrayElements " + strconv.FormatInt(opts.MaxArrayElements, 10) + " (range is [" + strconv.Itoa(minMaxArrayElements) + ", " + strconv.FormatInt(maxMaxArrayElements, 10) + "])")
 	}
 	if opts.MaxMapPairs == 0 {
 		opts.MaxMapPairs = defaultMaxMapPairs
 	} else if opts.MaxMapPairs < minMaxMapPairs || opts.MaxMapPairs > maxMaxMapPairs {
-		return nil, errors.New("cbor: invalid MaxMapPairs " + strconv.Itoa(opts.MaxMapPairs) + " (range is [" + strconv.Itoa(minMaxMapPairs) + ", " + strconv.Itoa(maxMaxMapPairs) + "])")
+		return nil, errors.New("cbor: invalid MaxMapPairs " + strconv.FormatInt(opts.MaxMapPairs, 10) + " (range is [" + strconv.Itoa(minMaxMapPairs) + ", " + strconv.FormatInt(maxMaxMapPairs, 10) + "])")
 	}
 	if !opts.ExtraReturnErrors.valid() {
 		return nil, errors.New("cbor: invalid ExtraReturnErrors " + strconv.Itoa(int(opts.ExtraReturnErrors)))
@@ -433,8 +433,8 @@ type decMode struct {
 	dupMapKey         DupMapKeyMode
 	timeTag           DecTagMode
 	maxNestedLevels   int
-	maxArrayElements  int
-	maxMapPairs       int
+	maxArrayElements  int64
+	maxMapPairs       int64
 	indefLength       IndefLengthMode
 	tagsMd            TagsMode
 	intDec            IntDecMode
@@ -482,7 +482,7 @@ func (dm *decMode) NewDecoder(r io.Reader) *Decoder {
 
 type decoder struct {
 	data []byte
-	off  int // next read offset in data
+	off  int64 // next read offset in data
 	dm   *decMode
 }
 
@@ -1041,17 +1041,17 @@ func (d *decoder) parse(skipSelfDescribedTag bool) (interface{}, error) { //noli
 func (d *decoder) parseByteString() []byte {
 	_, ai, val := d.getHead()
 	if ai != 31 {
-		b := make([]byte, int(val))
-		copy(b, d.data[d.off:d.off+int(val)])
-		d.off += int(val)
+		b := make([]byte, int64(val))
+		copy(b, d.data[d.off:d.off+int64(val)])
+		d.off += int64(val)
 		return b
 	}
 	// Process indefinite length string chunks.
 	b := []byte{}
 	for !d.foundBreak() {
 		_, _, val = d.getHead()
-		b = append(b, d.data[d.off:d.off+int(val)]...)
-		d.off += int(val)
+		b = append(b, d.data[d.off:d.off+int64(val)]...)
+		d.off += int64(val)
 	}
 	return b
 }
@@ -1062,8 +1062,8 @@ func (d *decoder) parseByteString() []byte {
 func (d *decoder) parseTextString() ([]byte, error) {
 	_, ai, val := d.getHead()
 	if ai != 31 {
-		b := d.data[d.off : d.off+int(val)]
-		d.off += int(val)
+		b := d.data[d.off : d.off+int64(val)]
+		d.off += int64(val)
 		if !utf8.Valid(b) {
 			return nil, &SemanticError{"cbor: invalid UTF-8 string"}
 		}
@@ -1073,8 +1073,8 @@ func (d *decoder) parseTextString() ([]byte, error) {
 	b := []byte{}
 	for !d.foundBreak() {
 		_, _, val = d.getHead()
-		x := d.data[d.off : d.off+int(val)]
-		d.off += int(val)
+		x := d.data[d.off : d.off+int64(val)]
+		d.off += int64(val)
 		if !utf8.Valid(x) {
 			for !d.foundBreak() {
 				d.skip() // Skip remaining chunk on error
@@ -1640,7 +1640,7 @@ func (d *decoder) skip() {
 
 	switch t {
 	case cborTypeByteString, cborTypeTextString:
-		d.off += int(val)
+		d.off += int64(val)
 	case cborTypeArray:
 		for i := 0; i < int(val); i++ {
 			d.skip()

@@ -74,7 +74,7 @@ type SenMLRecord struct {
 
 type T1 struct {
 	T    bool
-	UI   uint
+	UI   uint64
 	I    int
 	F    float64
 	B    []byte
@@ -85,7 +85,7 @@ type T1 struct {
 
 type T2 struct {
 	T    bool              `cbor:"1,keyasint"`
-	UI   uint              `cbor:"2,keyasint"`
+	UI   uint64            `cbor:"2,keyasint"`
 	I    int               `cbor:"3,keyasint"`
 	F    float64           `cbor:"4,keyasint"`
 	B    []byte            `cbor:"5,keyasint"`
@@ -97,7 +97,7 @@ type T2 struct {
 type T3 struct {
 	_    struct{} `cbor:",toarray"`
 	T    bool
-	UI   uint
+	UI   uint64
 	I    int
 	F    float64
 	B    []byte
@@ -278,7 +278,7 @@ func BenchmarkMarshal(b *testing.B) {
 	// Marshal map[string]interface{} to CBOR map
 	m1 := map[string]interface{}{ //nolint:dupl
 		"T":    true,
-		"UI":   uint(18446744073709551615),
+		"UI":   uint64(18446744073709551615),
 		"I":    -1000,
 		"F":    -4.1,
 		"B":    []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26},
@@ -300,7 +300,7 @@ func BenchmarkMarshal(b *testing.B) {
 	// Marshal map[int]interface{} to CBOR map
 	m2 := map[int]interface{}{ //nolint:dupl
 		1: true,
-		2: uint(18446744073709551615),
+		2: uint64(18446744073709551615),
 		3: -1000,
 		4: -4.1,
 		5: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26},
@@ -322,7 +322,7 @@ func BenchmarkMarshal(b *testing.B) {
 	// Marshal []interface to CBOR array.
 	slc := []interface{}{
 		true,
-		uint(18446744073709551615),
+		uint64(18446744073709551615),
 		-1000,
 		-4.1,
 		[]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26},

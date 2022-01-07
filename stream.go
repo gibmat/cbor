@@ -14,8 +14,8 @@ type Decoder struct {
 	r         io.Reader
 	d         decoder
 	buf       []byte
-	off       int // next read offset in buf
-	bytesRead int
+	off       int64 // next read offset in buf
+	bytesRead int64
 }
 
 // NewDecoder returns a new decoder that reads and decodes from r using
@@ -26,7 +26,7 @@ func NewDecoder(r io.Reader) *Decoder {
 
 // Decode reads CBOR value and decodes it into the value pointed to by v.
 func (dec *Decoder) Decode(v interface{}) error {
-	if len(dec.buf) == dec.off {
+	if int64(len(dec.buf)) == dec.off {
 		if n, err := dec.read(); n == 0 {
 			return err
 		}
@@ -50,16 +50,16 @@ func (dec *Decoder) Decode(v interface{}) error {
 }
 
 // NumBytesRead returns the number of bytes read.
-func (dec *Decoder) NumBytesRead() int {
+func (dec *Decoder) NumBytesRead() int64 {
 	return dec.bytesRead
 }
 
 func (dec *Decoder) read() (int, error) {
 	// Grow buf if needed.
 	const minRead = 512
-	if cap(dec.buf)-len(dec.buf)+dec.off < minRead {
+	if int64(cap(dec.buf))-int64(len(dec.buf))+dec.off < minRead {
 		oldUnreadBuf := dec.buf[dec.off:]
-		dec.buf = make([]byte, len(dec.buf)-dec.off, 2*cap(dec.buf)+minRead)
+		dec.buf = make([]byte, int64(len(dec.buf))-dec.off, 2*int64(cap(dec.buf))+minRead)
 		dec.overwriteBuf(oldUnreadBuf)
 	}
 

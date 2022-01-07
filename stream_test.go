@@ -19,7 +19,7 @@ func TestDecoder(t *testing.T) {
 		}
 	}
 	decoder := NewDecoder(&buf)
-	bytesRead := 0
+	bytesRead := int64(0)
 	for i := 0; i < 5; i++ {
 		for _, tc := range unmarshalTests {
 			var v interface{}
@@ -33,7 +33,7 @@ func TestDecoder(t *testing.T) {
 			} else if !reflect.DeepEqual(v, tc.emptyInterfaceValue) {
 				t.Errorf("Decode() = %v (%T), want %v (%T)", v, v, tc.emptyInterfaceValue, tc.emptyInterfaceValue)
 			}
-			bytesRead += len(tc.cborData)
+			bytesRead += int64(len(tc.cborData))
 			if decoder.NumBytesRead() != bytesRead {
 				t.Errorf("NumBytesRead() = %v, want %v", decoder.NumBytesRead(), bytesRead)
 			}
@@ -60,7 +60,7 @@ func TestDecoderUnmarshalTypeError(t *testing.T) {
 		}
 	}
 	decoder := NewDecoder(&buf)
-	bytesRead := 0
+	bytesRead := int64(0)
 	for i := 0; i < 5; i++ {
 		for _, tc := range unmarshalTests {
 			for _, typ := range tc.wrongTypes {
@@ -70,7 +70,7 @@ func TestDecoderUnmarshalTypeError(t *testing.T) {
 				} else if _, ok := err.(*UnmarshalTypeError); !ok {
 					t.Errorf("Decode(0x%x) returned wrong error type %T, want UnmarshalTypeError", tc.cborData, err)
 				}
-				bytesRead += len(tc.cborData)
+				bytesRead += int64(len(tc.cborData))
 				if decoder.NumBytesRead() != bytesRead {
 					t.Errorf("NumBytesRead() = %v, want %v", decoder.NumBytesRead(), bytesRead)
 				}
@@ -86,7 +86,7 @@ func TestDecoderUnmarshalTypeError(t *testing.T) {
 				} else if !reflect.DeepEqual(vi, tc.emptyInterfaceValue) {
 					t.Errorf("Decode() = %v (%T), want %v (%T)", vi, vi, tc.emptyInterfaceValue, tc.emptyInterfaceValue)
 				}
-				bytesRead += len(tc.cborData)
+				bytesRead += int64(len(tc.cborData))
 				if decoder.NumBytesRead() != bytesRead {
 					t.Errorf("NumBytesRead() = %v, want %v", decoder.NumBytesRead(), bytesRead)
 				}
